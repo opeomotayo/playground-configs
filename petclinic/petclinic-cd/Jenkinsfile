@@ -1,0 +1,14 @@
+pipeline {
+        agent any
+    stages {
+        stage('Deploy To K8S') {
+            steps {           
+                sh 'pwd'
+                sh 'cp -R helm/* .'
+                sh 'ls -ltr'
+                sh 'pwd'
+                sh '/usr/local/bin/helm upgrade --install petclinic-app petclinic  --set image.repository=opeomotayo/petclinic --set image.tag=1'
+            }           
+        }
+    }
+}

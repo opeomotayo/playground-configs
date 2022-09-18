@@ -1,0 +1,51 @@
+pipeline {
+    agent {
+        kubernetes {
+            yaml """
+                apiVersion: v1
+                kind: Pod
+                metadata:
+                    name: maven3
+                spec:
+                    containers:
+                    - name: maven
+                    image: maven:3-jdk-11-slim
+                    command:
+                    - cat
+                    tty: true
+            """
+        }
+    }
+    // tools {
+    //     maven 'maven3'
+    //     jdk 'jdk8'
+    // }
+    stages {
+        stage('Build Application') {
+            steps {
+                dir("applications/petclinic/petclinic-ci"){
+                    sh 'pwd'        
+                    sh 'mvn  clean install package'
+                }
+            }
+        }
+
+        stage('Copy Artifact') {
+           steps {
+                sh 'pwd'
+                sh 'cp -r target/*.jar docker'
+           }
+        }
+
+        stage('Build docker image') {
+            steps {
+                script {
+                    def customImage = docker.build('opeomotayo/petclinic', "./docker")
+                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
+                        customImage.push("${env.BUILD_NUMBER}")
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,1 +1,1 @@
-# playground-configs
+# playground-applications
